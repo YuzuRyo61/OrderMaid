@@ -147,3 +147,10 @@ dmypy.json
 .pytype/
 
 # End of https://www.toptal.com/developers/gitignore/api/code,python
+
+
+# config file
+config.json
+
+# database
+*.db

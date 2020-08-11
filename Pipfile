@@ -9,6 +9,13 @@ autopep8 = "*"
 
 [packages]
 "discord.py" = "*"
+dataset = "*"
+pyinquirer = "*"
+prompt-toolkit = "==1.0.14"
 
 [requires]
 python_version = "3.8"
+
+[scripts]
+start = "python OrderMaid.py"
+setup = "python scripts/configure.py"

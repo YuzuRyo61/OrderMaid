@@ -62,6 +62,20 @@ async def on_guild_join(guild):
                 "Can't send message. It may not enough permission.")
 
 
+@OM_BOT.command()
+@commands.is_owner()
+async def add_server(ctx):
+    try:
+        await ctx.message.author.send(
+            get_oauth_url()
+        )
+    except discord.Forbidden:
+        await ctx.send(
+            f"{ctx.message.author.mention} "
+            "Can't send message to your DM. "
+            "Please enable DM privacy from server's privacy setting.")
+
+
 __all__ = [
     "OM_BOT",
     "OM_CONFIG",

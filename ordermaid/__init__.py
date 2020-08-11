@@ -76,6 +76,34 @@ async def add_server(ctx):
             "Please enable DM privacy from server's privacy setting.")
 
 
+@OM_BOT.check
+async def checker(ctx):
+    if ctx.guild.owner == ctx.message.author:
+        return True
+    elif ctx.message.author.guild_permissions.administrator:
+        return True
+    else:
+        return False
+
+
+@OM_BOT.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.CheckFailure):
+        embed = discord.Embed(
+            title="Forbidden",
+            description=f"You don't have permission in {ctx.guild}",
+            color=discord.Colour.red()
+        )
+        await ctx.send(
+            ctx.message.author.mention,
+            embed=embed
+        )
+
+
+@OM_BOT.command()
+async def test(ctx):
+    await ctx.send("It works!")
+
 __all__ = [
     "OM_BOT",
     "OM_CONFIG",

@@ -19,9 +19,6 @@ OM_BOT = commands.Bot(
 )
 
 
-from .checker import checker  # noqa: F401, E402
-
-
 def get_oauth_url():
     return discord.utils.oauth_url(
         OM_CONFIG["client"]["client_id"],
@@ -64,7 +61,7 @@ async def on_guild_join(guild):
                 "Can't send message. It may not enough permission.")
 
 
-@OM_BOT.command()
+@OM_BOT.command(hidden=True)
 @commands.is_owner()
 async def add_server(ctx):
     try:
@@ -83,11 +80,18 @@ async def on_command_error(ctx, error):
     logging.warning(f"on_command_error: {str(error)} ({type(error)})")
     if isinstance(error, commands.CheckFailure) or \
             isinstance(error, commands.NotOwner):
-        embed = discord.Embed(
-            title="Forbidden",
-            description=f"You don't have permission in {ctx.guild}",
-            color=discord.Colour.red()
-        )
+        if ctx.guild is not None:
+            embed = discord.Embed(
+                title="Forbidden",
+                description=f"You don't have permission in {ctx.guild.name}",
+                color=discord.Colour.red()
+            )
+        else:
+            embed = discord.Embed(
+                title="Forbidden",
+                description="This command is not allowed in DM.",
+                color=discord.Colour.red()
+            )
         await ctx.send(
             ctx.message.author.mention,
             embed=embed
@@ -102,6 +106,19 @@ async def on_command_error(ctx, error):
             ctx.message.author.mention,
             embed=embed
         )
+    elif isinstance(error, commands.BadArgument):
+        embed = discord.Embed(
+            title="Bad Argument",
+            description=(
+                "There are not enough arguments or "
+                "they are invalid arguments."
+            ),
+            color=discord.Colour.red()
+        )
+        embed.set_footer(
+            text="OrderMaid"
+        )
+        await ctx.send(embed=embed)
     elif isinstance(error, commands.CommandInvokeError):
         embed = discord.Embed(
             title="Internal error",

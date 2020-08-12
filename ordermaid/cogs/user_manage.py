@@ -1,7 +1,10 @@
 import logging
+from typing import Optional
 
 import discord
 from discord.ext import commands
+
+from ..checker import is_administrator, is_guild
 
 
 class UserManage(commands.Cog, name="User Management"):
@@ -13,6 +16,8 @@ class UserManage(commands.Cog, name="User Management"):
         logging.info("User Management cog is loaded.")
 
     @commands.command()
+    @is_administrator()
+    @is_guild()
     async def fetch_user(self, ctx, target_id: int):
         async with ctx.typing():
             try:
@@ -75,21 +80,7 @@ class UserManage(commands.Cog, name="User Management"):
 
     @fetch_user.error
     async def fetch_user__error(self, ctx, error):
-        if isinstance(error, commands.BadArgument):
-            error_embed = discord.Embed(
-                title="Bad Argument",
-                description=(
-                    "There are not enough arguments or "
-                    "they are invalid arguments."
-                ),
-                color=discord.Colour.red()
-            )
-            error_embed.set_footer(
-                text="OrderMaid"
-            )
-            await ctx.send(embed=error_embed)
-            return
-        elif isinstance(error, commands.MissingRequiredArgument):
+        if isinstance(error, commands.MissingRequiredArgument):
             error_embed = discord.Embed(
                 title="Usage",
                 description=(
@@ -101,4 +92,85 @@ class UserManage(commands.Cog, name="User Management"):
                 text="OrderMaid"
             )
             await ctx.send(embed=error_embed)
-            return
+
+    @commands.command()
+    @is_administrator()
+    @is_guild()
+    async def ban(self, ctx, target_id: int, *, reason: Optional[str] = None):
+        async with ctx.typing():
+            try:
+                target = await self.bot.fetch_user(target_id)
+            except discord.NotFound:
+                error_embed = discord.Embed(
+                    title="Fetch failed",
+                    description="The specified user ID was not found.",
+                    color=discord.Colour.red()
+                )
+                error_embed.set_footer(
+                    text="OrderMaid"
+                )
+                await ctx.send(embed=error_embed)
+                return
+
+            await ctx.guild.ban(
+                target,
+                reason=reason
+            )
+
+            embed = discord.Embed(
+                title="BANNED",
+                description=(
+                    f"{target} is banned this server.\n"
+                    f"Reason: {reason}"
+                ),
+                color=discord.Colour.dark_red()
+            )
+            embed.set_author(
+                name=str(target),
+                icon_url=str(target.avatar_url)
+            )
+            embed.add_field(
+                name="User ID",
+                value=str(target.id),
+                inline=True
+            )
+            embed.add_field(
+                name="Name",
+                value=str(target.name),
+                inline=True
+            )
+            embed.add_field(
+                name="Discriminator",
+                value=str(target.discriminator),
+                inline=True
+            )
+            embed.add_field(
+                name="Registered at (UTC)",
+                value=target.created_at.strftime("%Y/%m/%d %H:%M:%S %A"),
+                inline=True
+            )
+            embed.add_field(
+                name="BOT",
+                value="✅" if target.bot else "❎",
+                inline=True
+            )
+            embed.set_footer(
+                text="OrderMaid"
+            )
+
+            await ctx.send(embed=embed)
+
+    @ban.error
+    async def ban__error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            error_embed = discord.Embed(
+                title="Usage",
+                description=(
+                    "`om ban <user_id:int> [reason]`"
+                ),
+                color=discord.Colour.red()
+            )
+            error_embed.set_footer(
+                text="OrderMaid"
+            )
+            await ctx.send(embed=error_embed)

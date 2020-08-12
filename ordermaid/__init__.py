@@ -15,9 +15,11 @@ OM_DB = dataset.connect(OM_CONFIG["database"]["url"])
 
 OM_BOT = commands.Bot(
     command_prefix=commands.when_mentioned_or("om "),
-    help_command=None,
     activity=discord.Game("OrderMaid")
 )
+
+
+from .checker import checker  # noqa: F401, E402
 
 
 def get_oauth_url():
@@ -76,19 +78,11 @@ async def add_server(ctx):
             "Please enable DM privacy from server's privacy setting.")
 
 
-@OM_BOT.check
-async def checker(ctx):
-    if ctx.guild.owner == ctx.message.author:
-        return True
-    elif ctx.message.author.guild_permissions.administrator:
-        return True
-    else:
-        return False
-
-
 @OM_BOT.event
 async def on_command_error(ctx, error):
-    if isinstance(error, commands.CheckFailure):
+    logging.warning(f"on_command_error: {str(error)} ({type(error)})")
+    if isinstance(error, commands.CheckFailure) or \
+            isinstance(error, commands.NotOwner):
         embed = discord.Embed(
             title="Forbidden",
             description=f"You don't have permission in {ctx.guild}",
@@ -98,11 +92,28 @@ async def on_command_error(ctx, error):
             ctx.message.author.mention,
             embed=embed
         )
-
-
-@OM_BOT.command()
-async def test(ctx):
-    await ctx.send("It works!")
+    elif isinstance(error, commands.CommandNotFound):
+        embed = discord.Embed(
+            title="Not Found",
+            description="This command is not found.",
+            color=discord.Colour.red()
+        )
+        await ctx.send(
+            ctx.message.author.mention,
+            embed=embed
+        )
+    elif isinstance(error, commands.CommandInvokeError):
+        embed = discord.Embed(
+            title="Internal error",
+            description=(
+                "It occurred error in internal system.\n"
+                f"`{str(error)}`"
+            ),
+            color=discord.Colour.dark_purple()
+        )
+        await ctx.send(
+            embed=embed
+        )
 
 __all__ = [
     "OM_BOT",

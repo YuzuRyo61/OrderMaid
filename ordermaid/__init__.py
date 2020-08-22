@@ -61,7 +61,7 @@ async def on_guild_join(guild):
                 "Can't send message. It may not enough permission.")
 
 
-@OM_BOT.command(hidden=True)
+@OM_BOT.command()
 @commands.is_owner()
 async def add_server(ctx):
     try:

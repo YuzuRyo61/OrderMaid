@@ -19,6 +19,12 @@ class UserManage(commands.Cog, name="User Management"):
     @is_administrator()
     @is_guild()
     async def fetch_user(self, ctx, target_id: int):
+        """
+        Get user information.
+        target_id: Specify the user ID of Discord.
+                   Tips: The user ID can be copied when
+                         the developer mode is enabled.
+        """
         async with ctx.typing():
             try:
                 target = await self.bot.fetch_user(target_id)
@@ -97,6 +103,16 @@ class UserManage(commands.Cog, name="User Management"):
     @is_administrator()
     @is_guild()
     async def ban(self, ctx, target_id: int, *, reason: Optional[str] = None):
+        """
+        BAN the user.
+        If you use this command, users who are not in
+        this server (guild) can also perform BAN.
+        target_id: Specify the user ID of Discord.
+                   Tips: The user ID can be copied when
+                         the developer mode is enabled.
+        reason: It's optional. You can enter the reason for BAN.
+                It does not matter if there is a space.
+        """
         async with ctx.typing():
             try:
                 target = await self.bot.fetch_user(target_id)
